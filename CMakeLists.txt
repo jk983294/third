@@ -25,3 +25,4 @@ include_directories(SYSTEM common/include)
 add_subdirectory(common)
 
 install(DIRECTORY interface/ DESTINATION /opt/3rd/interface)
+install(DIRECTORY Eigen/ DESTINATION /opt/3rd/Eigen/Eigen)
