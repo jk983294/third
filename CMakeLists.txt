@@ -26,3 +26,5 @@ add_subdirectory(common)
 
 install(DIRECTORY interface/ DESTINATION /opt/3rd/interface)
 install(DIRECTORY Eigen/ DESTINATION /opt/3rd/Eigen/Eigen)
+install(DIRECTORY gcem/ DESTINATION /opt/3rd/gcem)
+install(DIRECTORY stats/ DESTINATION /opt/3rd/stats)
