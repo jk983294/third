@@ -23,6 +23,7 @@ message ("cxx Flags: " ${CMAKE_CXX_FLAGS})
 include_directories(SYSTEM common/include)
 
 add_subdirectory(common)
+add_subdirectory(example)
 
 install(DIRECTORY interface/ DESTINATION /opt/3rd/interface)
 install(DIRECTORY Eigen/ DESTINATION /opt/3rd/Eigen/Eigen)
