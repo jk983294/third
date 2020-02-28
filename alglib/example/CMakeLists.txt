@@ -1,4 +1,4 @@
-file( GLOB APP_SOURCES "*.cpp")
+file( GLOB APP_SOURCES "*.cpp" "*/*.cpp")
 foreach( sourcefile ${APP_SOURCES} )
     # executable name cut off .cpp
     string( REGEX REPLACE ".+/" "" executablename1 ${sourcefile} )
