@@ -1,4 +1,4 @@
 file(GLOB algSrcs "*.cpp" )
-add_library(alg_lib STATIC ${algSrcs})
-
-install(TARGETS alg_lib ARCHIVE DESTINATION /opt/3rd/alglib/lib/)
+add_library(alg_lib SHARED ${algSrcs})
+set_property(TARGET alg_lib PROPERTY POSITION_INDEPENDENT_CODE ON)
+install(TARGETS alg_lib LIBRARY DESTINATION /opt/3rd/alglib/lib/)
