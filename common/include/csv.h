@@ -32,6 +32,7 @@
 #ifndef __CSV_H
 #define __CSV_H
 
+#include <cmath>
 #include <algorithm>
 #include <cstdio>
 #include <cstring>
