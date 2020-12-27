@@ -1,12 +1,93 @@
+#include <rapidjson/document.h>
+#include <rapidjson/istreamwrapper.h>
+#include <rapidjson/ostreamwrapper.h>
+#include <rapidjson/writer.h>
+#include <fstream>
 #include <iostream>
-#include "rapidjson/document.h"
-#include "rapidjson/stringbuffer.h"
-#include "rapidjson/writer.h"
+#include <unordered_map>
+#include <vector>
 
 using namespace std;
 using namespace rapidjson;
 
+void read_from_str();
+void write_file();
+void read_file();
+
 int main() {
+    read_from_str();
+    write_file();
+    read_file();
+    return 0;
+}
+
+void read_file() {
+    string path = "/tmp/demo.json";
+    std::unordered_map<string, double> f2score;
+    std::vector<string> formulas;
+    std::ifstream ifs(path);
+    rapidjson::IStreamWrapper isw(ifs);
+
+    rapidjson::Document d;
+    d.ParseStream(isw);
+
+    if (d.HasMember("formula2fitness")) {
+        const rapidjson::Value& formula2fitness = d["formula2fitness"];
+        for (auto& m : formula2fitness.GetObject()) {
+            f2score[string(m.name.GetString())] = m.value.GetDouble();
+        }
+    }
+
+    if (d.HasMember("curr_exprs")) {
+        const rapidjson::Value& curr_exprs = d["curr_exprs"];
+        for (rapidjson::Value::ConstValueIterator itr = curr_exprs.Begin(); itr != curr_exprs.End(); ++itr) {
+            formulas.emplace_back(itr->GetString());
+        }
+    }
+
+    for (auto& item : f2score) {
+        printf("f=%s, score=%f\n", item.first.c_str(), item.second);
+    }
+    for (auto& item : formulas) {
+        printf("f=%s\n", item.c_str());
+    }
+}
+
+void write_file() {
+    string path = "/tmp/demo.json";
+    std::vector<string> formulas = {"a", "b"};
+    std::unordered_map<string, double> f2score = {{"a", 1.0}, {"b", 2.0}};
+    rapidjson::Document d;
+    d.SetObject();  // root 设置成 object类型,而不是 array类型
+    rapidjson::Document::AllocatorType& allocator = d.GetAllocator();
+
+    rapidjson::Value curr_exprs(rapidjson::kArrayType);
+    for (const auto& f : formulas) {
+        rapidjson::Value objValue;
+        objValue.SetObject();
+        objValue.SetString(f.c_str(), f.size(), allocator);
+        curr_exprs.PushBack(objValue, allocator);
+    }
+    d.AddMember("curr_exprs", curr_exprs, allocator);
+
+    rapidjson::Value formula2fitness(rapidjson::kObjectType);
+    for (const auto& item : f2score) {
+        rapidjson::Value keyObj;
+        keyObj.SetString(item.first.c_str(), item.first.size(), allocator);
+        rapidjson::Value valueObj;
+        valueObj.SetDouble(item.second);
+        formula2fitness.AddMember(keyObj, valueObj, allocator);
+    }
+    d.AddMember("formula2fitness", formula2fitness, allocator);
+
+    ofstream ofs(path);
+    rapidjson::OStreamWrapper osw(ofs);
+    rapidjson::Writer<rapidjson::OStreamWrapper> writer(osw);
+    d.Accept(writer);
+    printf("dump formula to %s\n", path.c_str());
+}
+
+void read_from_str() {
     // Parse a JSON string into DOM.
     const char* json = "{\"project\":\"rapidjson\",\"stars\":10, \"null_key\":null, \"a\": [1, 2]}";
     Document d;
@@ -62,5 +143,4 @@ int main() {
     Writer<StringBuffer> writer(buffer);
     d.Accept(writer);
     std::cout << buffer.GetString() << std::endl;
-    return 0;
 }
