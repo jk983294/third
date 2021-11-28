@@ -2750,6 +2750,9 @@ namespace Detail {
         friend bool operator == ( const T& lhs, Approx const& rhs ) {
             // Thanks to Richard Harris for his help refining this formula
             auto lhs_v = double(lhs);
+            if (std::isnan(lhs_v) && std::isnan(rhs.m_value)) return true;
+            else if (std::isnan(lhs_v) && !std::isnan(rhs.m_value)) return false;
+            else if (!std::isnan(lhs_v) && std::isnan(rhs.m_value)) return false;
             bool relativeOK = std::fabs(lhs_v - rhs.m_value) < rhs.m_epsilon * (rhs.m_scale + (std::max)(std::fabs(lhs_v), std::fabs(rhs.m_value)));
             if (relativeOK) {
                 return true;
