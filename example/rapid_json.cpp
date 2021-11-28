@@ -84,6 +84,7 @@ void write_file() {
     rapidjson::OStreamWrapper osw(ofs);
     rapidjson::Writer<rapidjson::OStreamWrapper> writer(osw);
     d.Accept(writer);
+    ofs.close();
     printf("dump formula to %s\n", path.c_str());
 }
 
