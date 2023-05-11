@@ -895,7 +895,7 @@ void parse(char *col, signed long long &x) {
 
 template <class T>
 void parse_float(const char *col, T &x) {
-    if (strcmp("nan", col) == 0 || strcmp("NAN", col) == 0 || strcmp("Nan", col) == 0) {
+    if (strcmp("", col) == 0 || strcmp("nan", col) == 0 || strcmp("NAN", col) == 0 || strcmp("Nan", col) == 0) {
         x = NAN;
         return;
     }
