@@ -4,6 +4,7 @@
 #include <cereal/types/map.hpp>
 #include <cereal/types/memory.hpp>
 #include <cereal/types/vector.hpp>
+#include <cereal/types/polymorphic.hpp>
 #include <cstdio>
 #include <deque>
 #include <fstream>
@@ -46,6 +47,10 @@ struct MyClass1 {
 struct MyBase {
     int var1;
 
+    virtual void sayType() {
+        printf("MyBase::sayType\n");
+    }
+
     template <class Archive>
     void serialize(Archive& ar) {
         ar& var1;
@@ -54,6 +59,10 @@ struct MyBase {
 
 struct MyDerive : public MyBase {
     int var2;
+
+    virtual void sayType() {
+        printf("MyDerive::sayType\n");
+    }
 
     template <class Archive>
     void serialize(Archive& ar) {
@@ -146,6 +155,34 @@ void derive_demo() {
     printf("from %s %d,%d\n", file_.c_str(), b.var1, b.var2);
 }
 
+CEREAL_REGISTER_TYPE(MyDerive);
+CEREAL_REGISTER_POLYMORPHIC_RELATION(MyBase, MyDerive)
+//CEREAL_REGISTER_POLYMORPHIC_RELATION(BaseClass, EmbarrassingDerivedClass)
+//CEREAL_REGISTER_TYPE(DerivedClassOne);
+//CEREAL_REGISTER_TYPE(DerivedClassOne);
+
+void polymorphism_demo() {
+    std::shared_ptr<MyBase> a(new MyDerive);
+    a->var1 = 1;
+    ((MyDerive*)a.get())->var2 = 2;
+
+    string file_ = "/tmp/f.bin";
+    {  // save data to archive
+        std::ofstream ofs(file_);
+        cereal::BinaryOutputArchive oa(ofs);
+        oa << a;
+    }
+
+    std::shared_ptr<MyBase> b;
+    {
+        std::ifstream ifs(file_);
+        cereal::BinaryInputArchive ia(ifs);
+        ia >> b;
+    }
+    printf("from %s %d,%d\n", file_.c_str(), b->var1, ((MyDerive*)b.get())->var2);
+    b->sayType();
+}
+
 struct MyStdObj {
     std::map<string, string> a;
     vector<int> b;
@@ -190,6 +227,7 @@ int main() {
     basic_demo1();
     basic_demo2();
     derive_demo();
+    polymorphism_demo();
     std_demo();
     return 0;
 }
