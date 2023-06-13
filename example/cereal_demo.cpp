@@ -45,7 +45,8 @@ struct MyClass1 {
 };
 
 struct MyBase {
-    int var1;
+    int var1{0};
+    int var3{0};
 
     virtual void sayType() {
         printf("MyBase::sayType\n");
@@ -58,7 +59,8 @@ struct MyBase {
 };
 
 struct MyDerive : public MyBase {
-    int var2;
+    int var2{0};
+    int var4{0};
 
     virtual void sayType() {
         printf("MyDerive::sayType\n");
@@ -155,16 +157,15 @@ void derive_demo() {
     printf("from %s %d,%d\n", file_.c_str(), b.var1, b.var2);
 }
 
-CEREAL_REGISTER_TYPE(MyDerive);
+CEREAL_REGISTER_TYPE(MyDerive)
 CEREAL_REGISTER_POLYMORPHIC_RELATION(MyBase, MyDerive)
-//CEREAL_REGISTER_POLYMORPHIC_RELATION(BaseClass, EmbarrassingDerivedClass)
-//CEREAL_REGISTER_TYPE(DerivedClassOne);
-//CEREAL_REGISTER_TYPE(DerivedClassOne);
 
 void polymorphism_demo() {
     std::shared_ptr<MyBase> a(new MyDerive);
     a->var1 = 1;
+    a->var3 = 3;
     ((MyDerive*)a.get())->var2 = 2;
+    ((MyDerive*)a.get())->var4 = 4;
 
     string file_ = "/tmp/f.bin";
     {  // save data to archive
@@ -173,13 +174,15 @@ void polymorphism_demo() {
         oa << a;
     }
 
-    std::shared_ptr<MyBase> b;
+    std::shared_ptr<MyBase> b = make_shared<MyBase>();
+    b->var3 = 42;
     {
         std::ifstream ifs(file_);
         cereal::BinaryInputArchive ia(ifs);
         ia >> b;
     }
-    printf("from %s %d,%d\n", file_.c_str(), b->var1, ((MyDerive*)b.get())->var2);
+    MyDerive* b_cast = (MyDerive*)b.get();
+    printf("from %s %d,%d,%d,%d\n", file_.c_str(), b->var1, b->var3, b_cast->var2, b_cast->var4);
     b->sayType();
 }
 
