@@ -22,6 +22,7 @@ SET(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS)
 
 include_directories(SYSTEM common/include)
 include_directories(SYSTEM alglib/include)
+include_directories(SYSTEM /opt/3rd/ortools/include/)
 
 add_subdirectory(common)
 add_subdirectory(example)
