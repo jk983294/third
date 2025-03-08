@@ -1,3 +1,5 @@
+FIND_LIBRARY(ORTOOL_LIB libortools.so HINTS /opt/3rd/ortools/lib/ REQUIRED)
+
 file( GLOB APP_SOURCES "*.cpp")
 foreach( sourcefile ${APP_SOURCES} )
     # executable name cut off .cpp
@@ -6,10 +8,8 @@ foreach( sourcefile ${APP_SOURCES} )
 
     message ("source files: " ${sourcefile} " executable: " ${executablename})
     add_executable( ${executablename} ${sourcefile} )
-    target_link_libraries( ${executablename} common_3rd_lib pthread rt )
+    target_link_libraries( ${executablename} ${ORTOOL_LIB} pthread rt )
 endforeach( sourcefile ${APP_SOURCES} )
-
-add_subdirectory(ortools)
 
 
 

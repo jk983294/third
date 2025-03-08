@@ -3,7 +3,57 @@
 
 using namespace operations_research;
 
-int main(void) {
+std::string to_string_or_variables(MPSolver* solver) {
+    std::string str;
+    auto& vs = solver->variables();
+    for (size_t j = 0; j < vs.size(); ++j) {
+        std::string tmp;
+        auto* pvar = vs[j];
+        tmp += "x" + std::to_string(j) + " n='" + pvar->name() + "', lb=";
+        double lb_ = pvar->lb();
+        if (std::isfinite(lb_)) tmp += std::to_string(std::lround(lb_));
+        else tmp += std::to_string(lb_);
+        tmp += ", ub=";
+        double ub_ = pvar->ub();
+        if (std::isfinite(ub_)) tmp += std::to_string(std::lround(ub_));
+        else tmp += std::to_string(ub_);
+
+        str += tmp;
+        if (j + 1 != vs.size()) str += "\n";
+    }
+    return str;
+}
+std::string to_string_or_constraint(MPSolver* solver) {
+    std::string str;
+    auto& vs = solver->variables();
+    auto& cs = solver->constraints();
+    for (size_t i = 0; i < cs.size(); ++i) {
+        std::string tmp;
+        const MPConstraint* cons = cs[i];
+        for (size_t j = 0; j < vs.size(); ++j) {
+            double coef = cons->GetCoefficient(vs[j]);
+            tmp += std::to_string(std::lround(coef)) + " * x" + std::to_string(j);
+            if (j + 1 != vs.size()) tmp += " + ";
+        }
+        str += tmp;
+        if (i + 1 != cs.size()) str += "\n";
+    }
+    return str;
+}
+std::string to_string_or_objective(MPSolver* solver) {
+    std::string str;
+    auto& vs = solver->variables();
+    auto& o = solver->Objective();
+    auto& terms = o.terms();
+    for (size_t i = 0; i < vs.size(); ++i) {
+        auto itr = terms.find(vs[i]);
+        str += std::to_string(std::lround(itr->second)) + " * x" + std::to_string(i);
+        if (i + 1 != vs.size()) str += " + ";
+    }
+    return str;
+}
+
+int main() {
     /**
      * This program solves the following simple binary integer optimization
      * problem:
@@ -17,7 +67,7 @@ int main(void) {
      *        where    f_1 = 2 x_1 + 7 x_2 + 9 x_3 + 1,
      *                 f_2 = 5 y_1 + 6 y_2.
      */
-    std::unique_ptr<MPSolver> solver(MPSolver::CreateSolver("SCIP"));
+    std::unique_ptr<MPSolver> solver(MPSolver::CreateSolver("GLOP"));
     const double infinity = solver->infinity();
     MPVariable* const x1 = solver->MakeIntVar(0.0, infinity, "x1");
     MPVariable* const x2 = solver->MakeIntVar(0.0, infinity, "x2");
@@ -53,6 +103,10 @@ int main(void) {
     objective->SetCoefficient(y1, 5);
     objective->SetCoefficient(y2, 6);
     objective->SetMinimization();
+
+    std::cout << "vars:\n" << to_string_or_variables(solver.get()) << std::endl;
+    std::cout << "obj: " << to_string_or_objective(solver.get()) << std::endl;
+    std::cout << "cons:\n" << to_string_or_constraint(solver.get()) << std::endl;
 
     auto t0 = std::chrono::system_clock::now();
     const MPSolver::ResultStatus result_status = solver->Solve();
