@@ -30,17 +30,37 @@ std::string to_string_or_constraint(MPSolver* solver) {
     for (size_t i = 0; i < cs.size(); ++i) {
         std::string tmp;
         const MPConstraint* cons = cs[i];
+        double lb_ = cons->lb();
+        if (std::isfinite(lb_)) tmp += std::to_string(std::lround(lb_));
+        else tmp += std::to_string(lb_);
+        tmp += " <= ";
         for (size_t j = 0; j < vs.size(); ++j) {
             double coef = cons->GetCoefficient(vs[j]);
             tmp += std::to_string(std::lround(coef)) + " * x" + std::to_string(j);
             if (j + 1 != vs.size()) tmp += " + ";
         }
+        tmp += " <= ";
+        double ub_ = cons->ub();
+        if (std::isfinite(ub_)) tmp += std::to_string(std::lround(ub_));
+        else tmp += std::to_string(ub_);
         str += tmp;
         if (i + 1 != cs.size()) str += "\n";
     }
     return str;
 }
 std::string to_string_or_objective(MPSolver* solver) {
+    std::string str;
+    auto& vs = solver->variables();
+    auto& o = solver->Objective();
+    auto& terms = o.terms();
+    for (size_t i = 0; i < vs.size(); ++i) {
+        auto itr = terms.find(vs[i]);
+        str += std::to_string(std::lround(itr->second)) + " * x" + std::to_string(i);
+        if (i + 1 != vs.size()) str += " + ";
+    }
+    return str;
+}
+std::string to_string_or_result(MPSolver* solver) {
     std::string str;
     auto& vs = solver->variables();
     auto& o = solver->Objective();
